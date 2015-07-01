@@ -1,4 +1,4 @@
-package todo
+package todo // import "github.com/benschw/vault-todo/todo"
 
 import (
 	"net/http"
