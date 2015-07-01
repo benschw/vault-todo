@@ -26,7 +26,11 @@ func (s *TestSuite) SetUpTest(c *C) {
 }
 
 func (s *TestSuite) TearDownTest(c *C) {
-	s.s.Db.DropTable(Todo{})
+	db, err := s.s.Db.Get()
+	if err != nil {
+		panic(err)
+	}
+	db.DropTable(Todo{})
 	s.server.Stop()
 }
 

@@ -6,15 +6,20 @@ import (
 	"net/http"
 
 	"github.com/benschw/opin-go/rest"
-	"github.com/jinzhu/gorm"
+	"github.com/benschw/opin-go/vaultdb"
 )
 
 type TodoResource struct {
-	Db gorm.DB
+	Db vaultdb.DbProvider
 }
 
 func (r *TodoResource) Add(res http.ResponseWriter, req *http.Request) {
 	var todo Todo
+
+	db, err := r.Db.Get()
+	if err != nil {
+		rest.SetInternalServerErrorResponse(res, err)
+	}
 
 	if err := rest.Bind(req, &todo); err != nil {
 		log.Print(err)
@@ -22,7 +27,7 @@ func (r *TodoResource) Add(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	r.Db.Create(&todo)
+	db.Create(&todo)
 
 	if err := rest.SetCreatedResponse(res, todo, fmt.Sprintf("todo/%d", todo.Id)); err != nil {
 		rest.SetInternalServerErrorResponse(res, err)
@@ -38,7 +43,11 @@ func (r *TodoResource) Get(res http.ResponseWriter, req *http.Request) {
 	}
 	var todo Todo
 
-	if r.Db.First(&todo, id).RecordNotFound() {
+	db, err := r.Db.Get()
+	if err != nil {
+		rest.SetInternalServerErrorResponse(res, err)
+	}
+	if db.First(&todo, id).RecordNotFound() {
 		rest.SetNotFoundResponse(res)
 		return
 	}

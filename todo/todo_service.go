@@ -6,14 +6,15 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/benschw/opin-go/ophttp"
+	"github.com/benschw/opin-go/vaultdb"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )
 
 func NewTodoService(server *ophttp.Server) (*TodoService, error) {
 	dbStr := "root:@tcp(localhost:3306)/Todo?charset=utf8&parseTime=True"
-	// Connect to Databayse
-	db, err := DbOpen(dbStr)
+
+	db, err := vaultdb.NewStatic(dbStr)
 	if err != nil {
 		return nil, err
 	}
@@ -25,12 +26,16 @@ func NewTodoService(server *ophttp.Server) (*TodoService, error) {
 
 type TodoService struct {
 	Server *ophttp.Server
-	Db     gorm.DB
+	Db     vaultdb.DbProvider
 }
 
 func (s *TodoService) Migrate() error {
 	// Migrate
-	s.Db.AutoMigrate(&Todo{})
+	db, err := s.Db.Get()
+	if err != nil {
+		return err
+	}
+	db.AutoMigrate(&Todo{})
 
 	return nil
 }
