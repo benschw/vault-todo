@@ -6,6 +6,7 @@ import (
 	"github.com/benschw/dns-clb-go/dns"
 	"github.com/benschw/opin-go/ophttp"
 	"github.com/benschw/opin-go/rando"
+	"github.com/benschw/opin-go/vaultdb"
 	. "gopkg.in/check.v1"
 )
 
@@ -20,9 +21,17 @@ var _ = Suite(&TestSuite{})
 func (s *TestSuite) SetUpTest(c *C) {
 	s.address = dns.Address{Address: "localhost", Port: uint16(rando.Port())}
 
+	dbStr := "root:@tcp(localhost:3306)/Todo?charset=utf8&parseTime=True"
+
+	db, err := vaultdb.NewStatic(dbStr)
+	if err != nil {
+		panic(err)
+	}
 	s.server = ophttp.NewServer(fmt.Sprintf("%s:%d", s.address.Address, s.address.Port))
-	svc, _ := NewTodoService(s.server)
-	s.s = svc
+	s.s = &TodoService{
+		Server: s.server,
+		Db:     db,
+	}
 }
 
 func (s *TestSuite) TearDownTest(c *C) {

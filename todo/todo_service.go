@@ -8,10 +8,11 @@ import (
 	"github.com/benschw/opin-go/ophttp"
 	"github.com/benschw/opin-go/vaultdb"
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 )
 
-func NewTodoService(server *ophttp.Server) (*TodoService, error) {
+func NewTodoService(bind string) (*TodoService, error) {
+	server := ophttp.NewServer(bind)
+
 	dbStr := "root:@tcp(localhost:3306)/Todo?charset=utf8&parseTime=True"
 
 	db, err := vaultdb.NewStatic(dbStr)
@@ -60,13 +61,4 @@ func (s *TodoService) Run() error {
 
 func (s *TodoService) Stop() {
 	s.Server.Stop()
-}
-
-func DbOpen(dbStr string) (gorm.DB, error) {
-	db, err := gorm.Open("mysql", dbStr)
-	if err != nil {
-		return db, err
-	}
-	db.SingularTable(true)
-	return db, nil
 }
