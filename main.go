@@ -2,8 +2,11 @@ package main
 
 import (
 	"flag"
+	"log"
+	"os"
 
 	"github.com/benschw/opin-go/ophttp"
+	"github.com/benschw/vault-todo/todo"
 )
 
 func main() {
@@ -12,5 +15,19 @@ func main() {
 
 	server := ophttp.NewServer(*bind)
 
-	RunServer(server)
+	svc, err := todo.NewTodoService(server)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+
+	if err = svc.Migrate(); err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+
+	if err := svc.Run(); err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
 }
