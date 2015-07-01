@@ -1,4 +1,4 @@
-package main
+package main // import "github.com/benschw/vault-todo"
 
 import (
 	"flag"
