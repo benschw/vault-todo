@@ -1,4 +1,4 @@
-package todo // import "github.com/benschw/vault-todo/todo"
+package todo
 
 import (
 	"fmt"
