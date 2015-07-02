@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	"github.com/benschw/opin-go/rest"
-	"github.com/benschw/opin-go/vaultdb"
+	"github.com/benschw/opin-go/vault"
 )
 
 type TodoResource struct {
-	Db vaultdb.DbProvider
+	Db vault.DbProvider
 }
 
 func (r *TodoResource) Add(res http.ResponseWriter, req *http.Request) {

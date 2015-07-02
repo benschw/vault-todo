@@ -6,16 +6,16 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/benschw/opin-go/ophttp"
-	"github.com/benschw/opin-go/vaultdb"
+	"github.com/benschw/opin-go/vault"
 	"github.com/gorilla/mux"
 )
 
 func NewTodoService(bind string) (*TodoService, error) {
 	server := ophttp.NewServer(bind)
 
-	dbStr := "root:@tcp(localhost:3306)/Todo?charset=utf8&parseTime=True"
+	//dbStr := "root:@tcp(localhost:3306)/Todo?charset=utf8&parseTime=True"
 
-	db, err := vaultdb.NewStatic(dbStr)
+	db, err := vault.NewDbProvider("Todo", "mysql.service.consul")
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func NewTodoService(bind string) (*TodoService, error) {
 
 type TodoService struct {
 	Server *ophttp.Server
-	Db     vaultdb.DbProvider
+	Db     vault.DbProvider
 }
 
 func (s *TodoService) Migrate() error {

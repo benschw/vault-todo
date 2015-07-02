@@ -6,7 +6,7 @@ import (
 	"github.com/benschw/dns-clb-go/dns"
 	"github.com/benschw/opin-go/ophttp"
 	"github.com/benschw/opin-go/rando"
-	"github.com/benschw/opin-go/vaultdb"
+	"github.com/benschw/opin-go/vault"
 	. "gopkg.in/check.v1"
 )
 
@@ -23,7 +23,7 @@ func (s *TestSuite) SetUpTest(c *C) {
 
 	dbStr := "root:@tcp(localhost:3306)/Todo?charset=utf8&parseTime=True"
 
-	db, err := vaultdb.NewStatic(dbStr)
+	db, err := vault.NewStaticDbProvider(dbStr)
 	if err != nil {
 		panic(err)
 	}
