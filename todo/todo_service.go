@@ -1,6 +1,7 @@
 package todo
 
 import (
+	"log"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -55,10 +56,12 @@ func (s *TodoService) Run() error {
 	http.Handle("/", r)
 
 	// Start Server
-	s.Server.Start()
-	return nil
+	err := s.Server.Start()
+	log.Println("Server Stopped")
+	return err
 }
 
 func (s *TodoService) Stop() {
+	log.Println("Stopping Server...")
 	s.Server.Stop()
 }
