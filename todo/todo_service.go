@@ -14,8 +14,6 @@ import (
 func NewTodoService(bind string) (*TodoService, error) {
 	server := ophttp.NewServer(bind)
 
-	//dbStr := "root:@tcp(localhost:3306)/Todo?charset=utf8&parseTime=True"
-
 	db, err := vault.NewDbProvider("Todo", "mysql.service.consul")
 	if err != nil {
 		return nil, err
@@ -31,19 +29,19 @@ type TodoService struct {
 	Db     vault.DbProvider
 }
 
+// Migrate
 func (s *TodoService) Migrate() error {
-	// Migrate
 	db, err := s.Db.Get()
-	if err != nil {
-		return err
+	if err == nil {
+		db.AutoMigrate(&Todo{})
 	}
-	db.AutoMigrate(&Todo{})
 
-	return nil
+	return err
 }
 
 // Configure and start http server
 func (s *TodoService) Run() error {
+	defer s.Db.Close()
 	// Build Resource
 	resource := &TodoResource{Db: s.Db}
 
@@ -57,7 +55,7 @@ func (s *TodoService) Run() error {
 
 	// Start Server
 	err := s.Server.Start()
-	s.Db.Close()
+
 	log.Println("Server Stopped")
 	return err
 }
