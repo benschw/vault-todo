@@ -57,6 +57,7 @@ func (s *TodoService) Run() error {
 
 	// Start Server
 	err := s.Server.Start()
+	s.Db.Close()
 	log.Println("Server Stopped")
 	return err
 }
