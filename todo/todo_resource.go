@@ -20,6 +20,7 @@ func (r *TodoResource) Health(res http.ResponseWriter, req *http.Request) {
 	_, err := r.Db.Get()
 	if err != nil {
 		rest.SetInternalServerErrorResponse(res, err)
+		return
 	}
 
 	// set health to OK
@@ -35,6 +36,7 @@ func (r *TodoResource) Add(res http.ResponseWriter, req *http.Request) {
 	db, err := r.Db.Get()
 	if err != nil {
 		rest.SetInternalServerErrorResponse(res, err)
+		return
 	}
 
 	if err := rest.Bind(req, &todo); err != nil {
@@ -62,6 +64,7 @@ func (r *TodoResource) Get(res http.ResponseWriter, req *http.Request) {
 	db, err := r.Db.Get()
 	if err != nil {
 		rest.SetInternalServerErrorResponse(res, err)
+		return
 	}
 	if db.First(&todo, id).RecordNotFound() {
 		rest.SetNotFoundResponse(res)
@@ -80,6 +83,7 @@ func (r *TodoResource) GetAll(res http.ResponseWriter, req *http.Request) {
 	db, err := r.Db.Get()
 	if err != nil {
 		rest.SetInternalServerErrorResponse(res, err)
+		return
 	}
 	db.Find(&todos)
 
@@ -106,6 +110,7 @@ func (r *TodoResource) Update(res http.ResponseWriter, req *http.Request) {
 	db, err := r.Db.Get()
 	if err != nil {
 		rest.SetInternalServerErrorResponse(res, err)
+		return
 	}
 	if db.First(&found, id).RecordNotFound() {
 		rest.SetNotFoundResponse(res)
@@ -131,6 +136,7 @@ func (r *TodoResource) Delete(res http.ResponseWriter, req *http.Request) {
 	db, err := r.Db.Get()
 	if err != nil {
 		rest.SetInternalServerErrorResponse(res, err)
+		return
 	}
 	if db.First(&todo, id).RecordNotFound() {
 		rest.SetNotFoundResponse(res)
