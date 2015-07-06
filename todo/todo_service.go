@@ -42,6 +42,7 @@ func (s *TodoService) Migrate() error {
 // Configure and start http server
 func (s *TodoService) Run() error {
 	defer s.Db.Close()
+
 	// Build Resource
 	resource := &TodoResource{Db: s.Db}
 
