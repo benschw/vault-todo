@@ -15,7 +15,18 @@ type TodoResource struct {
 
 func (r *TodoResource) Health(res http.ResponseWriter, req *http.Request) {
 	//2xx => pass, 429 => warn, anything else => critical
-	res.WriteHeader(http.StatusOK)
+
+	// if we can't get a db connection, set health to Critical
+	_, err := r.Db.Get()
+	if err != nil {
+		rest.SetInternalServerErrorResponse(res, err)
+	}
+
+	// set health to OK
+	if err := rest.SetOKResponse(res, nil); err != nil {
+		rest.SetInternalServerErrorResponse(res, err)
+		return
+	}
 }
 
 func (r *TodoResource) Add(res http.ResponseWriter, req *http.Request) {
