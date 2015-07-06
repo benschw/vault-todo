@@ -48,6 +48,7 @@ func (s *TodoService) Run() error {
 
 	// Wire Routes
 	r := mux.NewRouter()
+	r.HandleFunc("/health", resource.Health).Methods("GET")
 	r.HandleFunc("/todo", resource.Add).Methods("POST")
 	r.HandleFunc("/todo", resource.GetAll).Methods("GET")
 	r.HandleFunc("/todo/{id}", resource.Get).Methods("GET")

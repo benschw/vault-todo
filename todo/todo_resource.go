@@ -13,6 +13,11 @@ type TodoResource struct {
 	Db vault.DbProvider
 }
 
+func (r *TodoResource) Health(res http.ResponseWriter, req *http.Request) {
+	//2xx => pass, 429 => warn, anything else => critical
+	res.WriteHeader(http.StatusOK)
+}
+
 func (r *TodoResource) Add(res http.ResponseWriter, req *http.Request) {
 	var todo Todo
 
