@@ -3,7 +3,6 @@
 [download latest](https://drone.io/github.com/benschw/vault-todo/files/build/todo)
 
 
-
 ## build
 
 	make deps
