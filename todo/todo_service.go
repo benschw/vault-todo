@@ -50,6 +50,8 @@ func (s *TodoService) Run() error {
 	r.HandleFunc("/todo", resource.Add).Methods("POST")
 	r.HandleFunc("/todo", resource.GetAll).Methods("GET")
 	r.HandleFunc("/todo/{id}", resource.Get).Methods("GET")
+	r.HandleFunc("/todo/{id}", resource.Update).Methods("PUT")
+	r.HandleFunc("/todo/{id}", resource.Delete).Methods("DELETE")
 
 	http.Handle("/", r)
 

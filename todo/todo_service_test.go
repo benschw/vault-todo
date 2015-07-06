@@ -18,7 +18,7 @@ type TestSuite struct {
 
 var _ = Suite(&TestSuite{})
 
-func (s *TestSuite) SetUpTest(c *C) {
+func (s *TestSuite) SetUpSuite(c *C) {
 	s.address = dns.Address{Address: "localhost", Port: uint16(rando.Port())}
 
 	dbStr := "root:@tcp(localhost:3306)/Todo?charset=utf8&parseTime=True"
@@ -32,24 +32,25 @@ func (s *TestSuite) SetUpTest(c *C) {
 		Server: s.server,
 		Db:     db,
 	}
+	go s.s.Run()
 }
-
+func (s *TestSuite) TearDownSuite(c *C) {
+	s.server.Stop()
+}
+func (s *TestSuite) SetUpTest(c *C) {
+	s.s.Migrate()
+}
 func (s *TestSuite) TearDownTest(c *C) {
 	db, err := s.s.Db.Get()
 	if err != nil {
 		panic(err)
 	}
 	db.DropTable(Todo{})
-	s.server.Stop()
 }
 
-func (s *TestSuite) TestTodo(c *C) {
+func (s *TestSuite) TestAdd(c *C) {
 	// given
-
-	s.s.Migrate()
-	go s.s.Run()
-
-	expected := &Todo{Content: "hello world", Status: "new"}
+	expected := &Todo{Id: 1, Content: "hello world", Status: "new"}
 
 	client := TodoClient{
 		Lb:      &StubAddressGetter{Val: s.address},
@@ -57,13 +58,99 @@ func (s *TestSuite) TestTodo(c *C) {
 	}
 
 	// when
-	todo, err := client.Add("hello world")
-	found, err2 := client.Find(todo.Id)
+	created, err := client.Add("hello world")
 
 	// then
 	c.Assert(err, Equals, nil)
-	c.Assert(err2, Equals, nil)
 
-	c.Assert(expected.Content, Equals, todo.Content)
-	c.Assert(todo, Equals, found)
+	found, _ := client.Find(created.Id)
+
+	c.Assert(created, DeepEquals, expected)
+	c.Assert(found, DeepEquals, expected)
+}
+func (s *TestSuite) TestGet(c *C) {
+	// given
+	expected := &Todo{Id: 1, Content: "hello world", Status: "new"}
+
+	client := TodoClient{
+		Lb:      &StubAddressGetter{Val: s.address},
+		Address: ServiceAddress,
+	}
+
+	client.Add("hello world")
+
+	// when
+	found, err := client.Find(1)
+
+	// then
+	c.Assert(err, Equals, nil)
+
+	c.Assert(found, DeepEquals, expected)
+}
+func (s *TestSuite) TestFindAll(c *C) {
+	// given
+	expected := []*Todo{
+		&Todo{Id: 1, Content: "hello world", Status: "new"},
+		&Todo{Id: 2, Content: "hello universe", Status: "new"},
+		&Todo{Id: 3, Content: "hello galaxy", Status: "new"},
+	}
+	client := TodoClient{
+		Lb:      &StubAddressGetter{Val: s.address},
+		Address: ServiceAddress,
+	}
+
+	client.Add("hello world")
+	client.Add("hello universe")
+	client.Add("hello galaxy")
+
+	// when
+	found, err := client.FindAll()
+
+	// then
+	c.Assert(err, Equals, nil)
+
+	c.Assert(found, DeepEquals, expected)
+}
+func (s *TestSuite) TestSave(c *C) {
+	// given
+	expected := &Todo{Id: 1, Content: "foo", Status: "in-progress"}
+
+	client := TodoClient{
+		Lb:      &StubAddressGetter{Val: s.address},
+		Address: ServiceAddress,
+	}
+
+	todo, _ := client.Add("hello world")
+
+	// when
+	todo.Content = "foo"
+	todo.Status = "in-progress"
+	saved, err := client.Save(todo)
+
+	// then
+	c.Assert(err, Equals, nil)
+
+	found, _ := client.Find(todo.Id)
+
+	c.Assert(saved, DeepEquals, expected)
+	c.Assert(found, DeepEquals, expected)
+}
+func (s *TestSuite) TestDelete(c *C) {
+	// given
+	client := TodoClient{
+		Lb:      &StubAddressGetter{Val: s.address},
+		Address: ServiceAddress,
+	}
+
+	todo, _ := client.Add("hello world")
+
+	// when
+	err := client.Delete(todo.Id)
+
+	// then
+	c.Assert(err, Equals, nil)
+
+	_, err = client.Find(todo.Id)
+
+	c.Assert(err, DeepEquals, fmt.Errorf("404: Not Found"))
 }
