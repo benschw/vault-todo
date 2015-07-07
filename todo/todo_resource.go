@@ -17,12 +17,18 @@ func (r *TodoResource) Health(res http.ResponseWriter, req *http.Request) {
 	//2xx => pass, 429 => warn, anything else => critical
 
 	// if we can't get a db connection, set health to Critical
-	_, err := r.Db.Get()
+	db, err := r.Db.Get()
 	if err != nil {
 		rest.SetInternalServerErrorResponse(res, err)
 		return
 	}
 
+	var todos []Todo
+	assoc := db.Find(&todos)
+	if assoc.Error != nil {
+		rest.SetInternalServerErrorResponse(res, err)
+		return
+	}
 	// set health to OK
 	if err := rest.SetOKResponse(res, nil); err != nil {
 		rest.SetInternalServerErrorResponse(res, err)
